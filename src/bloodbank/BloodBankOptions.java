@@ -9,6 +9,10 @@ import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Statement;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.imageio.ImageIO;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
@@ -28,6 +32,7 @@ public class BloodBankOptions extends Frame {
     
 
     Connection databaseConnection = null;
+    Statement dataStatement;
     PreparedStatement databasePreparedStatement = null;
     ResultSet resultSet = null;
     DefaultTableModel defaultTableModel = new DefaultTableModel();
@@ -44,8 +49,9 @@ public class BloodBankOptions extends Frame {
      
     private TextField numberOfBloodPackWantToSell;
     private Font bigLabelFont = new Font("Varenda", Font.BOLD, 20);
-
+    
     BloodBankOptions() {
+       
         databaseConnection = BloodBankOptions.connectDatabase();
 
         searchBuiyerPannel.setBounds(135, 00, 615, 390);
@@ -180,12 +186,12 @@ public class BloodBankOptions extends Frame {
 
     }
 
-    public void NewDoner() {
+    public int NewDoner() {
         
-        newDonorButton.setEnabled(false);
+        //newDonorButton.setEnabled(false);
         
-        newDonorButton.setSize(115, 35);
-        newDonorButton.setBackground(Color.GRAY);
+        //newDonorButton.setSize(115, 35);
+        //newDonorButton.setBackground(Color.GRAY);
 
         remove(availableDonorListPannel);
         remove(numOfBloodAvailablePannel);
@@ -486,13 +492,15 @@ public class BloodBankOptions extends Frame {
         });
 
         //----------------------------------------------------
+       
+                //int statemnetUpdateCheak = dataStatement.executeUpdate(sqlSaveInfoOnSavebuttonClick);
         Button saveButton = new Button("Save");
         saveButton.setBounds(20, 305, 150, 30);
         Font saveCancelButtonFont = new Font("Varenda", Font.BOLD, 14);
         saveButton.setFont(saveCancelButtonFont);
         newDonorPanel.add(saveButton);
+         int  statementReturn = 0;
         saveButton.addActionListener(new ActionListener() {
-
             @Override
             public void actionPerformed(ActionEvent ae) {
 
@@ -504,9 +512,11 @@ public class BloodBankOptions extends Frame {
                     String birthdate = dayCoice.getSelectedItem() + " " + monthCoice.getSelectedItem() + " " + yearCoice.getSelectedItem();
                     String city = insertCityTextfield.getText();
                     String phoneNumber = insertPhoneNumTextfield.getText();
-
                     String sqlSaveInfoOnSavebuttonClick = "INSERT INTO BloodDonorsList(Phone,Name,Age,Blood_Group,Gender,Birthdate,City)VALUES(?,?,?,?,?,?,?)";
-                    try {
+                    
+                     try {
+                        int statemnetUpdateCheak = dataStatement.executeUpdate(sqlSaveInfoOnSavebuttonClick);
+                        
                         databasePreparedStatement = databaseConnection.prepareStatement(sqlSaveInfoOnSavebuttonClick);
                         databasePreparedStatement.setString(1, phoneNumber);
                         databasePreparedStatement.setString(2, Name);
@@ -531,41 +541,6 @@ public class BloodBankOptions extends Frame {
             }
         });
 
-        saveButton.addKeyListener(new KeyAdapter() {
-            @Override
-            public void keyPressed(KeyEvent keyEvent) {
-                if (keyEvent.getKeyCode() == 10) {
-                    String Name = firstNameTextfield.getText() + " " + lastNameTextfield.getText();
-                    String age = ageTextfield.getText();
-                    String bloodGroupe = selectBloodGroupeCoice.getSelectedItem() + " " + selectBloodGroupePositiveOrNegaticveCoice.getSelectedItem();
-                    String gender = genderSelectLabel.getText();
-                    String birthdate = dayCoice.getSelectedItem() + " " + monthCoice.getSelectedItem() + " " + yearCoice.getSelectedItem();
-                    String city = insertCityTextfield.getText();
-                    String phoneNumber = insertPhoneNumTextfield.getText();
-
-                    String sqlSaveInfoOnSavebuttonClick = "INSERT INTO BloodDonorsList(Phone,Name,Age,Blood_Group,Gender,Birthdate,City)VALUES(?,?,?,?,?,?,?)";
-                    try {
-                        databasePreparedStatement = databaseConnection.prepareStatement(sqlSaveInfoOnSavebuttonClick);
-                        databasePreparedStatement.setString(1, phoneNumber);
-                        databasePreparedStatement.setString(2, Name);
-                        databasePreparedStatement.setString(3, age);
-                        databasePreparedStatement.setString(4, bloodGroupe);
-                        databasePreparedStatement.setString(5, gender);
-                        databasePreparedStatement.setString(6, birthdate);
-                        databasePreparedStatement.setString(7, city);
-                        databasePreparedStatement.execute();
-                        resultSet.close();
-                        databasePreparedStatement.close();
-                        JOptionPane.showMessageDialog(null, "Saved");
-
-                    } catch (Exception exception) {
-                        JOptionPane.showMessageDialog(null, exception);
-
-                    }
-                }
-            }
-
-        });
         Button cancelButton = new Button("Cancel");
         cancelButton.setBounds(190, 305, 150, 30);
         cancelButton.setFont(saveCancelButtonFont);
@@ -595,11 +570,16 @@ public class BloodBankOptions extends Frame {
             }
 
         });
+        return statementReturn;
     }
 
     public void updateTableForDonorsList() {
+         
         String sqlupdateTable = "Select Phone,Name,Age,Blood_Group,Gender,Birthdate,City from BloodDonorsList";
         try {
+            //int statemnetUpdateCheak = dataStatement.executeUpdate(NewDoner().sqlSaveInfoOnSavebuttonClick);
+            
+            dataStatement = databaseConnection.createStatement();
             
             databasePreparedStatement = databaseConnection.prepareStatement(sqlupdateTable);
             resultSet = databasePreparedStatement.executeQuery();
@@ -741,4 +721,5 @@ public class BloodBankOptions extends Frame {
 
     }
 
+    
 }
